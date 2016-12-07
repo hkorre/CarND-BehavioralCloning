@@ -29,6 +29,13 @@ class DataParser:
       finally:
         f.close()
 
+  def _format_left_img(self, file_ID):
+    image = mpimg.imread('IMG/left_' + file_ID)
+    start = 0
+    end   = self._img_height
+    image = image[:, start:end, :]
+    return image
+
   def _format_center_img(self, file_ID):
     image = mpimg.imread('IMG/center_' + file_ID)
     start = int(self._img_height/2)
@@ -36,10 +43,17 @@ class DataParser:
     image = image[:, start:end, :]
     return image
 
+  def _format_right_img(self, file_ID):
+    image = mpimg.imread('IMG/right_' + file_ID)
+    start = self._img_width_original - self._img_height
+    end   = self._img_width_original
+    image = image[:, start:end, :]
+    return image
+
 
 
   def _combine_imgs(self):
-    print('_combining_imgs')
+    print('DataParser: _combining_imgs()...')
 
     num_imgs = len(self._steering_angles)
 
@@ -48,14 +62,12 @@ class DataParser:
     self._right_imgs = np.zeros_like(self._left_imgs)
 
     for index in range(num_imgs):
-      print(index)
+      if (index % 100 == 0):
+        print('\tparsed {}/{}'.format(index, num_imgs))
+
+      self._left_imgs[index]   = self._format_left_img(self._file_IDs[index])
       self._center_imgs[index] = self._format_center_img(self._file_IDs[index])
-      
-    '''
-    print(self._right_imgs.shape)
-    image_center = self._format_center_img(self._file_IDs[0])
-    print('This image is:', type(image_center), 'with dimesions:', image_center.shape)
-    '''
+      self._right_imgs[index]  = self._format_right_img(self._file_IDs[index])
   
  
 
@@ -66,18 +78,26 @@ class DataParser:
     self._grab_data()
     self._combine_imgs()
 
-  def get_images(self):
-    return (self._left_imgs, self._center_imgs, self._right_imgs)
-
-  def get_angles(self):
+  @property
+  def steering_angles(self):
     return self._steering_angles
+
+  @property
+  def left_imgs(self):
+    return self._left_imgs
+
+  @property
+  def center_imgs(self):
+    return self._center_imgs
+
+  @property
+  def right_imgs(self):
+    return self._left_imgs
 
 
 if __name__ == '__main__':
-  print('in data_parser.py')
+  print('Running main in data_parser.py')
 
   data_parser = DataParser()
   data_parser.parse_data()
-
-  #print(data_parser.get_angles())
 
