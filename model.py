@@ -51,32 +51,34 @@ class BehaviorCloner:
     left_branch = Sequential()
     left_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=left_input,
       input_shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS)))
+    #left_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     #left_branch.add(Flatten())
 
     center_input = Input(shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
     center_branch = Sequential()
     center_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=center_input,
       input_shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS)))
+    #center_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     #center_branch.add(Flatten())
 
     right_input = Input(shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
     right_branch = Sequential()
     right_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=right_input,
       input_shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS)))
-    right_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
+    #right_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     #right_branch.add(Flatten())
 
     merged = Merge([left_branch, center_branch, right_branch], mode='concat')
 
     self._model = Sequential()
     self._model.add(merged)
-    self._model.add(Dense(n_hidden1_))
+    self._model.add(Dense(n_hidden1_, name='fully_connect1'))
     self._model.add(Activation('relu'))
     self._model.add(Dropout(pct_drop_))
-    self._model.add(Dense(n_hidden2_))
+    self._model.add(Dense(n_hidden2_, name='fully_connect2'))
     self._model.add(Activation('relu'))
     self._model.add(Dropout(pct_drop_))
-    self._model.add(Dense(1, activation='sigmoid'))
+    self._model.add(Dense(1, activation='sigmoid', name='final'))
 
     self._model.summary()
 
