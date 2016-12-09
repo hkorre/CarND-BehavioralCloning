@@ -79,11 +79,9 @@ class BehaviorCloner:
     self._model = Sequential()
     self._model.add(merged)
     self._model.add(Lambda(lambda x: K.stop_gradient(x)))
-    self._model.add(Dense(n_hidden1_, name='fully_connect1'))
-    self._model.add(Activation('relu'))
+    self._model.add(Dense(n_hidden1_, activation='relu', name='fully_connect1'))
     self._model.add(Dropout(pct_drop_))
-    self._model.add(Dense(n_hidden2_, name='fully_connect2'))
-    self._model.add(Activation('relu'))
+    self._model.add(Dense(n_hidden2_, activation='relu', name='fully_connect2'))
     self._model.add(Dropout(pct_drop_))
     self._model.add(Dense(1, activation='sigmoid', name='final'))
 
