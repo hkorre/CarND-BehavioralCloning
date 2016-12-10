@@ -14,6 +14,7 @@ class DataParser:
   def __init__(self):
     self._img_height = 160
     self._img_width_original = 320
+    self._img_channels = 3
 
     self._filename = 'driving_log.csv'
     self._steering_angles = []
@@ -78,8 +79,8 @@ class DataParser:
         print('\tparsed {}/{}'.format(index, num_imgs))
 
       self._left_imgs[index]   = self._grab_left_img(self._file_IDs[index])
-      #self._center_imgs[index] = self._grab_center_img(self._file_IDs[index])
-      #self._right_imgs[index]  = self._grab_right_img(self._file_IDs[index])
+      self._center_imgs[index] = self._grab_center_img(self._file_IDs[index])
+      self._right_imgs[index]  = self._grab_right_img(self._file_IDs[index])
   
     print('... combining imgs done')
 
@@ -99,6 +100,18 @@ class DataParser:
     self._combine_imgs()
 
   @property
+  def img_height(self):
+    return self._img_height
+
+  @property
+  def img_width(self):
+    return self._img_width_original
+
+  @property
+  def img_channels(self):
+    return self._img_channels
+
+  @property
   def steering_angles(self):
     return self._steering_angles
 
@@ -106,38 +119,36 @@ class DataParser:
   def left_imgs(self):
     return self._left_imgs
 
+  '''
   @left_imgs.setter
   def left_imgs(self, imgs_):
     self._left_imgs = imgs_
+  '''
 
   @property
   def center_imgs(self):
     return self._center_imgs
 
+  '''
   @center_imgs.setter
   def center_imgs(self, imgs_):
     self._center_imgs = imgs_
+  '''
 
   @property
   def right_imgs(self):
     return self._left_imgs
 
+  '''
   @right_imgs.setter
   def right_imgs(self, imgs_):
     self._left_imgs = imgs_
+  '''
 
   def preprocess_data(self):
-    # normalize
-    #if self._left_imgs:
-    if hasattr(self, '_left_imgs'):
-      print('DataParser: normalizing _left_imgs...')
-      self._left_imgs = self._normalize_img(self._left_imgs)
-    if hasattr(self, '_center_imgs'):
-      print('DataParser: normalizing _center_imgs...')
-      self._center_imgs = self._normalize_img(self._center_imgs)
-    if hasattr(self, '_right_imgs'):
-      print('DataParser: normalizing _right_imgs...')
-      self._right_imgs = self._normalize_img(self._right_imgs)
+    self._left_imgs = self._normalize_img(self._left_imgs)
+    self._center_imgs = self._normalize_img(self._center_imgs)
+    self._right_imgs = self._normalize_img(self._right_imgs)
 
 
 

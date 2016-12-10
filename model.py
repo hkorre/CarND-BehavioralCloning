@@ -10,9 +10,11 @@ from keras.engine.topology import Layer
 from data_parser import DataParser
 
 
+'''
 INPUT_HEIGHT = 160
 INPUT_WIDTH = 320 #160
 INPUT_CHANNELS = 3
+'''
 
 '''
 VGG_HEIGHT = 224
@@ -30,49 +32,51 @@ class BehaviorCloner:
     self._data_parser = DataParser()
 
 
-  def _grab_data(self):
-    self._data_parser.parse_data()
-
   '''
-  def _preprocess_data(self):
-    #TODO
-    # normalize
-    #
-    return
-
-    ## Split to training and validation sets?
-    '''
-    '''
-    # run session to resize the data
-    img_placeholder = tf.placeholder("uint8", (None, INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
-    resize_op = tf.image.resize_images(img_placeholder, (VGG_HEIGHT, VGG_WIDTH), method=0)
-    '''
-
+  External API
+  '''
   def setup_data(self):
-    self._grab_data()
+    self._data_parser.parse_data()
+    self._data_parser.preprocess_data()
 
   def build_model(self, n_hidden1_=512, n_hidden2_=512, pct_drop_=0.5):
-    pool_size_ = 7
+    #pool_size_ = 7
+
+    input_height = self._data_parser.img_height
+    input_width = self._data_parser.img_width
+    input_channels = self._data_parser.img_channels
 
 
-    left_input = Input(shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
+    #left_input = Input(shape=(input_height, input_width, input_channels))
+    left_input = Input(shape=(None, input_height, input_width, input_channels))
     left_branch = Sequential()
+    '''
     left_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=left_input,
-      input_shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS)))
+      input_shape=(input_height, input_width, input_channels )))
+    '''
+    left_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=left_input))
     #left_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     left_branch.add(Flatten())
 
-    center_input = Input(shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
+    #center_input = Input(shape=(input_height, input_width, input_channels))
+    center_input = Input(shape=(None, input_height, input_width, input_channels))
     center_branch = Sequential()
+    '''
     center_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=center_input,
-      input_shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS)))
+      input_shape=(input_height, input_width, input_channels )))
+    '''
+    center_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=center_input))
     #center_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     center_branch.add(Flatten())
 
-    right_input = Input(shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
+    #right_input = Input(shape=(input_height, input_width, input_channels))
+    right_input = Input(shape=(None, input_height, input_width, input_channels))
     right_branch = Sequential()
+    '''
     right_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=right_input,
-      input_shape=(INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS)))
+      input_shape=(input_height, input_width, input_channels )))
+    '''
+    right_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=right_input))
     #right_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     right_branch.add(Flatten())
 
