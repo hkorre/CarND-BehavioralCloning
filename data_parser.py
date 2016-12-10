@@ -17,20 +17,20 @@ class DataParser:
     self._img_channels = 3
 
     self._filename = 'driving_log.csv'
-    self._steering_angles = []
+    #self._steering_angles = []
 
   def _grab_data(self):
     self._file_IDs = []
-
+    steering_angles_list = []
     with open('driving_log.csv', 'r') as f:
       try:
         reader = csv.reader(f)
         for row in reader:
           self._file_IDs.append(row[0].split("center_",1)[1])
-          self._steering_angles.append(float(row[3]))
+          steering_angles_list.append(float(row[3]))
       finally:
         f.close()
-
+    self._steering_angles = np.asarray(steering_angles_list)
 
   def _grab_left_img(self, file_ID_):
     return mpimg.imread('IMG/left_' + file_ID_)

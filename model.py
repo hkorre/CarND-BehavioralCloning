@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import inspect
+import traceback
+
 from keras.applications.vgg16 import VGG16
 from keras.models import Sequential
 from keras.layers import Input, Merge, Dense, Lambda
@@ -35,17 +38,17 @@ class BehaviorCloner:
     input_channels = self._data_parser.img_channels
 
 
-    left_input = Input(shape=(input_height, input_width, input_channels))
+    left_input = Input(shape=(input_height, input_width, input_channels), name='left_input')
     left_branch = Sequential()
     left_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=left_input))
     left_branch.add(Flatten())
 
-    center_input = Input(shape=(input_height, input_width, input_channels))
+    center_input = Input(shape=(input_height, input_width, input_channels), name='center_input')
     center_branch = Sequential()
     center_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=center_input))
     center_branch.add(Flatten())
 
-    right_input = Input(shape=(input_height, input_width, input_channels))
+    right_input = Input(shape=(input_height, input_width, input_channels), name='right_input')
     right_branch = Sequential()
     right_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=right_input))
     right_branch.add(Flatten())
@@ -68,12 +71,14 @@ class BehaviorCloner:
   def train_model(self, num_epochs_, batch_size_):
 
     # setup for training
+    #self._model.compile(optimizer='rmsprop',
     self._model.compile(optimizer=Adam(),
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
     # train the model
-    print(self._data_parser.left_imgs)
+    print(self._data_parser.left_imgs.shape)
+    print(self._data_parser.steering_angles.shape)
     history = self._model.fit([self._data_parser.left_imgs, 
                                self._data_parser.center_imgs, 
                                self._data_parser.right_imgs], 
@@ -86,8 +91,19 @@ class BehaviorCloner:
 if __name__ == '__main__':
   print('Running main in model.py')
 
-  behavior_cloner = BehaviorCloner()
-  behavior_cloner.setup_data()
-  behavior_cloner.build_model()
-  behavior_cloner.train_model(10, 32)
+  try:
+    behavior_cloner = BehaviorCloner()
+    behavior_cloner.setup_data()
+    behavior_cloner.build_model()
+    behavior_cloner.train_model(10, 32)
+  except:
+    print(traceback.format_exc())
+    print('---')
+    #print(inspect.getargvalues(traceback.tb_frame))
+    '''
+    for frame, filename, line_num, func, source_code, source_index in inspect.stack():
+      print( '{}[{}]\n  -> {}'.format(filename, line_num, source_code[source_index].strip()) )
+      print(inspect.getargvalues(frame))
+      print('')
+    '''
 
