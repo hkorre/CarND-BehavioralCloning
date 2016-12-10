@@ -7,6 +7,8 @@ from keras.layers import Flatten, Activation, Dropout
 from keras import backend as K
 from keras.engine.topology import Layer
 
+from data_parser import DataParser
+
 
 INPUT_HEIGHT = 160
 INPUT_WIDTH = 320 #160
@@ -25,13 +27,11 @@ class BehaviorCloner:
      learn to control the car on it's own"""
 
   def __init__(self):
-    #TODO
-    return
+    self._data_parser = DataParser()
 
 
   def _grab_data(self):
-    #TODO
-    return
+    self._data_parser.parse_data()
 
   def _preprocess_data(self):
     #TODO
@@ -47,6 +47,8 @@ class BehaviorCloner:
     resize_op = tf.image.resize_images(img_placeholder, (VGG_HEIGHT, VGG_WIDTH), method=0)
     '''
 
+  def setup_data(self):
+    self._grab_data()
 
   def build_model(self, n_hidden1_=512, n_hidden2_=512, pct_drop_=0.5):
     pool_size_ = 7
@@ -104,5 +106,6 @@ if __name__ == '__main__':
   print('Running main in model.py')
 
   behavior_cloner = BehaviorCloner()
+  behavior_cloner.setup_data()
   behavior_cloner.build_model()
 

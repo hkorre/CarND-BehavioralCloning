@@ -29,22 +29,33 @@ class DataParser:
       finally:
         f.close()
 
-  def _format_left_img(self, file_ID):
-    image = mpimg.imread('IMG/left_' + file_ID)
+
+  def _grab_left_img(self, file_ID_):
+    return mpimg.imread('IMG/left_' + file_ID_)
+
+  def _grab_center_img(self, file_ID_):
+    return mpimg.imread('IMG/center_' + file_ID_)
+
+  def _grab_right_img(self, file_ID_):
+    return mpimg.imread('IMG/right_' + file_ID_)
+
+
+  def _crop_left_img(self, file_ID_):
+    image = self._grab_left_img(file_ID_)
     start = 0
     end   = self._img_height
     image = image[:, start:end, :]
     return image
 
-  def _format_center_img(self, file_ID):
-    image = mpimg.imread('IMG/center_' + file_ID)
+  def _crop_center_img(self, file_ID_):
+    image = self._grab_center_img(file_ID_)
     start = int(self._img_height/2)
     end   = self._img_width_original - start
     image = image[:, start:end, :]
     return image
 
-  def _format_right_img(self, file_ID):
-    image = mpimg.imread('IMG/right_' + file_ID)
+  def _crop_right_img(self, file_ID_):
+    image = self._grab_right_img(file_ID_) 
     start = self._img_width_original - self._img_height
     end   = self._img_width_original
     image = image[:, start:end, :]
@@ -57,7 +68,7 @@ class DataParser:
 
     num_imgs = len(self._steering_angles)
 
-    self._left_imgs = np.zeros((num_imgs, self._img_height, self._img_height, 3))
+    self._left_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
     self._center_imgs = np.zeros_like(self._left_imgs)
     self._right_imgs = np.zeros_like(self._left_imgs)
 
@@ -65,10 +76,11 @@ class DataParser:
       if (index % 100 == 0):
         print('\tparsed {}/{}'.format(index, num_imgs))
 
-      self._left_imgs[index]   = self._format_left_img(self._file_IDs[index])
-      self._center_imgs[index] = self._format_center_img(self._file_IDs[index])
-      self._right_imgs[index]  = self._format_right_img(self._file_IDs[index])
+      self._left_imgs[index]   = self._grab_left_img(self._file_IDs[index])
+      #self._center_imgs[index] = self._grab_center_img(self._file_IDs[index])
+      #self._right_imgs[index]  = self._grab_right_img(self._file_IDs[index])
   
+    print('... combining imgs done')
  
 
   '''
@@ -86,13 +98,25 @@ class DataParser:
   def left_imgs(self):
     return self._left_imgs
 
+  @left_imgs.setter
+  def left_imgs(self, imgs_):
+    self._left_imgs = imgs_
+
   @property
   def center_imgs(self):
     return self._center_imgs
 
+  @center_imgs.setter
+  def center_imgs(self, imgs_):
+    self._center_imgs = imgs_
+
   @property
   def right_imgs(self):
     return self._left_imgs
+
+  @right_imgs.setter
+  def right_imgs(self, imgs_):
+    self._left_imgs = imgs_
 
 
 if __name__ == '__main__':
