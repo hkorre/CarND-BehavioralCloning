@@ -4,6 +4,7 @@ import csv
 import matplotlib.image as mpimg
 import numpy as np
 import sys
+import traceback
 
 
 
@@ -81,6 +82,13 @@ class DataParser:
       #self._right_imgs[index]  = self._grab_right_img(self._file_IDs[index])
   
     print('... combining imgs done')
+
+
+  def _normalize_img(self, img_):
+      # data from 0-255 -> -0.5-0.5
+      #change type to np.float32 to accomodate negative numbers
+      #  and get ready for further math
+      return (img_.astype(np.float32)/255) - 0.5
  
 
   '''
@@ -118,10 +126,29 @@ class DataParser:
   def right_imgs(self, imgs_):
     self._left_imgs = imgs_
 
+  def preprocess_data(self):
+    # normalize
+    #if self._left_imgs:
+    if hasattr(self, '_left_imgs'):
+      print('DataParser: normalizing _left_imgs...')
+      self._left_imgs = self._normalize_img(self._left_imgs)
+    if hasattr(self, '_center_imgs'):
+      print('DataParser: normalizing _center_imgs...')
+      self._center_imgs = self._normalize_img(self._center_imgs)
+    if hasattr(self, '_right_imgs'):
+      print('DataParser: normalizing _right_imgs...')
+      self._right_imgs = self._normalize_img(self._right_imgs)
+
+
+
 
 if __name__ == '__main__':
   print('Running main in data_parser.py')
 
-  data_parser = DataParser()
-  data_parser.parse_data()
+  try:
+    data_parser = DataParser()
+    data_parser.parse_data()
+    data_parser.preprocess_data()
+  except:
+    print(traceback.format_exc())
 

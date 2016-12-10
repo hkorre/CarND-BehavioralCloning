@@ -33,6 +33,7 @@ class BehaviorCloner:
   def _grab_data(self):
     self._data_parser.parse_data()
 
+  '''
   def _preprocess_data(self):
     #TODO
     # normalize
@@ -40,7 +41,7 @@ class BehaviorCloner:
     return
 
     ## Split to training and validation sets?
-
+    '''
     '''
     # run session to resize the data
     img_placeholder = tf.placeholder("uint8", (None, INPUT_HEIGHT, INPUT_WIDTH, INPUT_CHANNELS))
