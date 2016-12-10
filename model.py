@@ -6,21 +6,9 @@ from keras.layers import Input, Merge, Dense, Lambda
 from keras.layers import Flatten, Activation, Dropout
 from keras import backend as K
 from keras.engine.topology import Layer
+from keras.optimizers import SGD, Adam, RMSprop
 
 from data_parser import DataParser
-
-
-'''
-INPUT_HEIGHT = 160
-INPUT_WIDTH = 320 #160
-INPUT_CHANNELS = 3
-'''
-
-'''
-VGG_HEIGHT = 224
-VGG_WIDTH = 224
-VGG_CHANNELS = 3
-'''
 
 
 
@@ -47,41 +35,22 @@ class BehaviorCloner:
     input_channels = self._data_parser.img_channels
 
 
-    #left_input = Input(shape=(input_height, input_width, input_channels))
-    left_input = Input(shape=(None, input_height, input_width, input_channels))
+    left_input = Input(shape=(input_height, input_width, input_channels))
     left_branch = Sequential()
-    '''
-    left_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=left_input,
-      input_shape=(input_height, input_width, input_channels )))
-    '''
     left_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=left_input))
-    #left_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     left_branch.add(Flatten())
 
-    #center_input = Input(shape=(input_height, input_width, input_channels))
-    center_input = Input(shape=(None, input_height, input_width, input_channels))
+    center_input = Input(shape=(input_height, input_width, input_channels))
     center_branch = Sequential()
-    '''
-    center_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=center_input,
-      input_shape=(input_height, input_width, input_channels )))
-    '''
     center_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=center_input))
-    #center_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     center_branch.add(Flatten())
 
-    #right_input = Input(shape=(input_height, input_width, input_channels))
-    right_input = Input(shape=(None, input_height, input_width, input_channels))
+    right_input = Input(shape=(input_height, input_width, input_channels))
     right_branch = Sequential()
-    '''
-    right_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=right_input,
-      input_shape=(input_height, input_width, input_channels )))
-    '''
     right_branch.add(VGG16(include_top=False, weights='imagenet', input_tensor=right_input))
-    #right_branch.add(AveragePooling2D(pool_size=(pool_size_, pool_size_))
     right_branch.add(Flatten())
 
     merged = Merge([left_branch, center_branch, right_branch], mode='concat')
-    #merged = K.stop_gradient(merged)
 
     self._model = Sequential()
     self._model.add(merged)
@@ -98,12 +67,19 @@ class BehaviorCloner:
 
   def train_model(self, num_epochs_, batch_size_):
 
-    model.compile(optimizer=Adam(),
+    # setup for training
+    self._model.compile(optimizer=Adam(),
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
     # train the model
-    model.fit([left_imgs, canter_imgs, right_imgs], labels, nb_epoch=num_epochs_, batch_size=batch_size_)
+    print(self._data_parser.left_imgs)
+    history = self._model.fit([self._data_parser.left_imgs, 
+                               self._data_parser.center_imgs, 
+                               self._data_parser.right_imgs], 
+                               self._data_parser.steering_angles, 
+                               nb_epoch=num_epochs_, 
+                               batch_size=batch_size_)
 
 
 
@@ -113,4 +89,5 @@ if __name__ == '__main__':
   behavior_cloner = BehaviorCloner()
   behavior_cloner.setup_data()
   behavior_cloner.build_model()
+  behavior_cloner.train_model(10, 32)
 

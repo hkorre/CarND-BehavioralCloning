@@ -82,7 +82,7 @@ class DataParser:
       self._center_imgs[index] = self._grab_center_img(self._file_IDs[index])
       self._right_imgs[index]  = self._grab_right_img(self._file_IDs[index])
   
-    print('... combining imgs done')
+    print('... _combining_imgs() done')
 
 
   def _normalize_img(self, img_):
@@ -146,9 +146,11 @@ class DataParser:
   '''
 
   def preprocess_data(self):
+    print('DataParser: preprocess_data()...')
     self._left_imgs = self._normalize_img(self._left_imgs)
     self._center_imgs = self._normalize_img(self._center_imgs)
     self._right_imgs = self._normalize_img(self._right_imgs)
+    print('... preprocess_data() done')
 
 
 
