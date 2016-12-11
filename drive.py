@@ -21,6 +21,13 @@ app = Flask(__name__)
 model = None
 prev_image_array = None
 
+
+def normalize_img(img_):
+    # data from 0-255 -> -0.5-0.5
+    #change type to np.float32 to accomodate negative numbers
+    #  and get ready for further math
+    return (img_.astype(np.float32)/255) - 0.5
+
 @sio.on('telemetry')
 def telemetry(sid, data):
     # The current steering angle of the car
@@ -33,6 +40,7 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
+    image_array = normalize_img(image_array)
     transformed_image_array = image_array[None, :, :, :]
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
