@@ -57,12 +57,12 @@ class BehaviorCloner:
 
     self._model = Sequential()
     self._model.add(merged)
-    self._model.add(Lambda(lambda x: K.stop_gradient(x)))
+    #self._model.add(Lambda(lambda x: K.stop_gradient(x)))
     self._model.add(Dense(n_hidden1_, activation='relu', name='fully_connect1'))
     self._model.add(Dropout(pct_drop_))
     self._model.add(Dense(n_hidden2_, activation='relu', name='fully_connect2'))
     self._model.add(Dropout(pct_drop_))
-    self._model.add(Dense(1, activation='sigmoid', name='final'))
+    self._model.add(Dense(1, name='final'))
 
     self._model.summary()
 
@@ -71,13 +71,13 @@ class BehaviorCloner:
   def train_model(self, num_epochs_, batch_size_):
 
     # setup for training
-    #self._model.compile(optimizer='rmsprop',
     self._model.compile(optimizer=Adam(),
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
+                  loss='mean_squared_error')
 
     # train the model
     print(self._data_parser.left_imgs.shape)
+    print(self._data_parser.center_imgs.shape)
+    print(self._data_parser.right_imgs.shape)
     print(self._data_parser.steering_angles.shape)
     history = self._model.fit([self._data_parser.left_imgs, 
                                self._data_parser.center_imgs, 
