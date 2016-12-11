@@ -32,20 +32,24 @@ class BehaviorCloner:
       if 'trainable' in layer.get_config():
         print('\t{}'.format(layer.get_config()['trainable']))
     
-  def _generator_creator(self, data_, labels_, batch_size_):
+  def _generator_creator(self, labels_, batch_size_):
       def _f():
           start = 0
           end = start + batch_size_
-          num_imgs = data_.shape[0]
+          num_imgs = labels_.shape[0]
   
           while True:
-              X_batch = data_[start:end]
+              self._data_parser.combine_batch(start, end)
+              self._data_parser.preprocess_data()
+              X_batch = self._data_parser.center_imgs
               y_batch = labels_[start:end]
               start += batch_size_
               end += batch_size_
               if start >= num_imgs:
-                  start = 0
-                  end = batch_size_
+                start = 0
+                end = batch_size_
+              if end >= num_imgs:
+                end = num_imgs
   
               #print(start, end)
               yield (X_batch, y_batch)
@@ -58,7 +62,7 @@ class BehaviorCloner:
   '''
   def setup_data(self):
     self._data_parser.parse_data()
-    self._data_parser.preprocess_data()
+    #self._data_parser.preprocess_data()
 
   def build_model(self, n_hidden1_=512, n_hidden2_=512, pct_drop_=0.5):
 
@@ -76,9 +80,9 @@ class BehaviorCloner:
 
     # a few fully connected layers
     x = Dense(n_hidden1_, activation='relu', name='fully_connect1')(x)
-    #x = Dropout(pct_drop_)(x)
+    x = Dropout(pct_drop_)(x)
     x = Dense(n_hidden2_, activation='relu', name='fully_connect2')(x)
-    #x = Dropout(pct_drop_)(x)
+    x = Dropout(pct_drop_)(x)
     predictions = Dense(1, name='final')(x)
 
     # this is the model we will train
@@ -102,10 +106,9 @@ class BehaviorCloner:
     self._model.compile(optimizer='adam', loss='mean_squared_error')
 
     # train the model
-    train_gen = self._generator_creator(self._data_parser.center_imgs,
-                                        self._data_parser.steering_angles,
+    train_gen = self._generator_creator(self._data_parser.steering_angles,
                                         batch_size_)
-    num_imgs = self._data_parser.center_imgs.shape[0]
+    num_imgs = self._data_parser.steering_angles.shape[0]
     history = self._model.fit_generator(train_gen(), num_imgs, num_epochs_)
 
     print('... train_model() done')
