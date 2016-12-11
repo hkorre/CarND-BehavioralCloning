@@ -11,6 +11,8 @@ import pickle
 import tensorflow as tf
 import keras.backend as K
 
+from data_parser import DataParser
+
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 
@@ -26,8 +28,10 @@ if FLAGS.network == 'inception':
     h, w, ch = 299, 299, 3
     from keras.applications.inception_v3 import preprocess_input
 
+'''
 img_placeholder = tf.placeholder("uint8", (None, 32, 32, 3))
 resize_op = tf.image.resize_images(img_placeholder, (h, w), method=0)
+'''
 
 
 def gen(session, data, labels, batch_size):
@@ -37,8 +41,11 @@ def gen(session, data, labels, batch_size):
         n = data.shape[0]
 
         while True:
+            '''
             X_batch = session.run(resize_op, {img_placeholder: data[start:end]})
             X_batch = preprocess_input(X_batch)
+            '''
+            X_batch = data[start:end]
             y_batch = data[start:end]
             start += batch_size
             end += batch_size
@@ -52,7 +59,9 @@ def gen(session, data, labels, batch_size):
     return _f
 
 
-def create_model():
+def create_model(height_, width_, channels_):
+    print('create_model')
+    '''
     input_tensor = Input(shape=(h, w, ch))
     if FLAGS.network == 'vgg':
         model = VGG16(input_tensor=input_tensor, include_top=False)
@@ -66,11 +75,29 @@ def create_model():
         model = Model(model.input, x)
     else:
         model = ResNet50(input_tensor=input_tensor, include_top=False)
+    '''
+
+    #5x is 2x2 pooling in VGG16
+    pool1 = int(height_/(2**5))
+    pool2 = int(width_/(2**5))
+
+    input_tensor = Input(shape=(height_, width_, channels_))
+    model = VGG16(input_tensor=input_tensor, include_top=False)
+    x = model.output
+    x = AveragePooling2D((pool1, pool2))(x)
+    model = Model(model.input, x)
+    
+    model.summary()
+
     return model
 
 
 def main(_):
 
+
+    print('in main')
+
+    ''' 
     if FLAGS.dataset == 'cifar10':
         (X_train, y_train), (_, _) = cifar10.load_data()
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
@@ -78,9 +105,25 @@ def main(_):
         with open('data/train.p', mode='rb') as f:
             train = pickle.load(f)
         X_train, X_val, y_train, y_val = train_test_split(train['features'], train['labels'], test_size=0.33, random_state=0)
+    '''
 
+
+    # Get the data
+    _data_parser = DataParser()
+    _data_parser.parse_data()
+    _data_parser.preprocess_data()
+    
+    X_train = _data_parser.center_imgs
+    y_train = _data_parser.steering_angles
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=0)
+    print('got and split the data')
+
+    '''
     train_output_file = "{}_{}_{}.p".format(FLAGS.network, FLAGS.dataset, 'bottleneck_features_train')
     validation_output_file = "{}_{}_{}.p".format(FLAGS.network, FLAGS.dataset, 'bottleneck_features_validation')
+    '''
+    train_output_file = "{}_{}_{}.p".format('vgg16', 'center', 'bottleneck_features_train')
+    validation_output_file = "{}_{}_{}.p".format('vgg16', 'center', 'bottleneck_features_validation')
 
     print("Resizing to", (w, h, ch))
     print("Saving to ...")
@@ -91,7 +134,7 @@ def main(_):
         K.set_session(sess)
         K.set_learning_phase(1)
 
-        model = create_model()
+        model = create_model(_data_parser.img_height, _data_parser.img_width, _data_parser.img_channels)
 
         print('Bottleneck training')
         train_gen = gen(sess, X_train, y_train, batch_size)
