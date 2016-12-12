@@ -32,6 +32,7 @@ Dropout is used to prevent overfitting
   * Stopped recording
 * I only used center images, as that was what would be fed to the car during autonomous driving
 * All 10k images are from the 'Left' track, as that is what we would be tested on
+* I drove the car on the track clockwise and counter clockwise to generalize the features
 
 ### Data Feedthrough
 I use a data generator to feed in small batches of images, so that I don't use up too much memory.
