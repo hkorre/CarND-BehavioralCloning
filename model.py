@@ -122,7 +122,7 @@ if __name__ == '__main__':
     behavior_cloner.setup_data()
     behavior_cloner.build_model()
 
-    test_num_epochs = 4
+    test_num_epochs = 3
     test_batch_size = 16
     behavior_cloner.train_model(test_num_epochs, test_batch_size)
 
