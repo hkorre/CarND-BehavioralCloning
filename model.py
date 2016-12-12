@@ -81,7 +81,7 @@ class BehaviorCloner:
     self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
-    self._model.add(Dense(128))
+    self._model.add(Dense(64))
     self._model.add(Activation('relu'))
     self._model.add(Dropout(0.25))
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     behavior_cloner.setup_data()
     behavior_cloner.build_model()
 
-    test_num_epochs = 3
+    test_num_epochs = 10
     test_batch_size = 16
     behavior_cloner.train_model(test_num_epochs, test_batch_size)
 
