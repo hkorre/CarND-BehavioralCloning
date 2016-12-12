@@ -49,7 +49,7 @@ class BehaviorCloner:
   def setup_data(self):
     self._data_parser.parse_data()
 
-  def build_model(self, n_hidden1_=512, n_hidden2_=512, pct_drop_=0.5):
+  def build_model(self):
 
     input_height = self._data_parser.img_height
     input_width = self._data_parser.img_width
@@ -76,14 +76,14 @@ class BehaviorCloner:
     self._model.add(Flatten())
 
     # Hidden Layer #1
-    self._model.add(Dense(256))
+    self._model.add(Dense(128))
     self._model.add(Activation('relu'))
-    self._model.add(Dropout(0.5))
+    self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
-    self._model.add(Dense(256))
+    self._model.add(Dense(128))
     self._model.add(Activation('relu'))
-    self._model.add(Dropout(0.5))
+    self._model.add(Dropout(0.25))
 
     # Answer
     self._model.add(Dense(1))
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     behavior_cloner.setup_data()
     behavior_cloner.build_model()
 
-    test_num_epochs = 5
+    test_num_epochs = 3
     test_batch_size = 16
     behavior_cloner.train_model(test_num_epochs, test_batch_size)
 
