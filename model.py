@@ -76,14 +76,14 @@ class BehaviorCloner:
     self._model.add(Flatten())
 
     # Hidden Layer #1
-    self._model.add(Dense(128))
+    self._model.add(Dense(256))
     self._model.add(Activation('relu'))
-    self._model.add(Dropout(0.25))
+    self._model.add(Dropout(0.5))
 
     # Hidden Layer #2
-    self._model.add(Dense(128))
+    self._model.add(Dense(256))
     self._model.add(Activation('relu'))
-    self._model.add(Dropout(0.25))
+    self._model.add(Dropout(0.5))
 
     # Answer
     self._model.add(Dense(1))
