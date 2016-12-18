@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import cv2
 import numpy as np
 import json
 import traceback
@@ -24,6 +25,21 @@ class BehaviorCloner:
     self._data_parser = DataParser()
 
 
+  def _flip_images(self, imgs_):
+    for index in range(imgs_.shape[0]):
+      imgs_[index] = cv2.flip(imgs_[index], 1) 
+    return imgs_
+    '''
+    img1 = imgs_[0]
+    print(img1.shape)
+    print(img1[0,:,0])
+    imgs_[0] = cv2.flip(imgs_[0], 1) 
+    print(img1[0,:,0])
+    '''
+
+  def _flip_labels(self, labels_):
+    return labels_*(-1)
+
   def _combine_LCR(self, labels_):
     left_imgs = self._data_parser.left_imgs
     center_imgs = self._data_parser.center_imgs
@@ -35,6 +51,10 @@ class BehaviorCloner:
     center_labels = np.copy(labels_)
     right_labels = np.copy(labels_) - angle_adjust
     total_labels = np.concatenate((left_labels, center_labels, right_labels))
+
+    # Extra data
+    total_imgs = np.concatenate((total_imgs, self._flip_images(total_imgs)))
+    total_labels = np.concatenate((total_labels, self._flip_labels(total_labels)))
 
     return total_imgs, total_labels
 
@@ -145,7 +165,7 @@ class BehaviorCloner:
     # train the model
     train_gen = self._generator_creator(self._data_parser.steering_angles,
                                         batch_size_, xDiv_, yDiv_)
-    num_imgs = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
+    num_imgs = self._data_parser.steering_angles.shape[0]*3*2   #3x for left, center, right, 2x for flipped images
     history = self._model.fit_generator(train_gen(), num_imgs, num_epochs_)
 
     print('... train_model() done')
@@ -171,7 +191,7 @@ if __name__ == '__main__':
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
     test_num_epochs = 5
-    test_batch_size = 128
+    test_batch_size = 32
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
 
