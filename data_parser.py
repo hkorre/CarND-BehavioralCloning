@@ -4,6 +4,7 @@ import csv
 import cv2
 import matplotlib.image as mpimg
 import numpy as np
+from sklearn.utils import shuffle
 import traceback
 
 
@@ -34,6 +35,7 @@ class DataParser:
       finally:
         f.close()
     self._steering_angles = np.asarray(steering_angles_list)
+    self._steering_angles = shuffle(self._steering_angles, random_state=0)
 
   # Returns YUV version of an image
   #  xDiv_ and yDiv_ should be 2^#
