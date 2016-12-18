@@ -30,7 +30,7 @@ class BehaviorCloner:
     right_imgs = self._data_parser.right_imgs
     total_imgs = np.concatenate((left_imgs, center_imgs, right_imgs))
 
-    angle_adjust = 0.1 
+    angle_adjust = 0.5 
     left_labels = np.copy(labels_) + angle_adjust
     center_labels = np.copy(labels_)
     right_labels = np.copy(labels_) - angle_adjust
