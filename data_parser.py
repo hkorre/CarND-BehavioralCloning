@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import csv
+import cv2
 import matplotlib.image as mpimg
 import numpy as np
 import traceback
@@ -32,30 +33,34 @@ class DataParser:
     self._steering_angles = np.asarray(steering_angles_list)
 
   # Returns YUV version of an image
-  def _grab_img_YUV(self, filename_):
+  #  xDiv_ and yDiv_ should be 2^#
+  def _grab_img_YUV(self, filename_, xDiv_, yDiv_):
     img_BGR = cv2.imread(filename_)                  #gives BGR
+    img_BGR = cv2.resize(image, 
+                         (img_BGR.shape[0]/xDiv_, img_BGR.shape[1]/yDiv_), 
+                         interpolation = cv2.INTER_AREA)
     return cv2.cvtColor(img_BGR, cv2.COLOR_BGR2YUV)  #gives YUV
     #TODO: resize input (maybe in data_parser.py)
 
-  def _grab_left_img(self, file_ID_):
-    return _grab_img_YUV('data/IMG/left_' + file_ID_)
+  def _grab_left_img(self, file_ID_, xDiv_, yDiv_):
+    return self._grab_img_YUV('data/IMG/left_' + file_ID_, xDiv_, yDiv_)
 
-  def _grab_center_img(self, file_ID_):
-    return _grab_img_YUV('data/IMG/center_' + file_ID_)
+  def _grab_center_img(self, file_ID_, xDiv_, yDiv_):
+    return self._grab_img_YUV('data/IMG/center_' + file_ID_, xDiv_, yDiv_)
 
-  def _grab_right_img(self, file_ID_):
-    return _grab_img_YUV('data/IMG/right_' + file_ID_)
+  def _grab_right_img(self, file_ID_, xDiv_, yDiv_):
+    return self._grab_img_YUV('data/IMG/right_' + file_ID_, xDiv_, yDiv_)
 
-  def _combine_batch(self, start_, stop_):
+  def _combine_batch(self, start_, stop_, xDiv_, yDiv_):
     num_imgs = stop_-start_
     self._left_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
     self._center_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
     self._right_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
     index = 0
     for img_num in range(start_, stop_):
-      self._left_imgs[index] = self._grab_left_img(self._file_IDs[img_num])
-      self._center_imgs[index] = self._grab_center_img(self._file_IDs[img_num])
-      self._right_imgs[index] = self._grab_right_img(self._file_IDs[img_num])
+      self._left_imgs[index] = self._grab_left_img(self._file_IDs[img_num], xDiv_, yDiv_)
+      self._center_imgs[index] = self._grab_center_img(self._file_IDs[img_num], xDiv_, yDiv_)
+      self._right_imgs[index] = self._grab_right_img(self._file_IDs[img_num], xDiv_, yDiv_)
       index += 1
  
 
@@ -65,8 +70,8 @@ class DataParser:
   def grab_data_info(self):
     self._grab_data()
 
-  def combine_batch(self, start, stop):
-    self._combine_batch(start, stop)
+  def combine_batch(self, start, stop, xDiv, yDiv):
+    self._combine_batch(start, stop, xDiv, yDiv)
 
   def parse_data(self):
     self._grab_data()
@@ -107,6 +112,8 @@ if __name__ == '__main__':
   try:
     data_parser = DataParser()
     data_parser.parse_data()
+    data_parser.combine_batch(0, 5, 1, 1)
+    print(data.parser.center_imgs.shape)
   except:
     print(traceback.format_exc())
 
