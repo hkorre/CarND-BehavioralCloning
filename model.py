@@ -10,6 +10,7 @@ from keras.layers import Flatten, Activation, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers import MaxPooling2D
 from keras.layers import ELU
+from keras.regularizers import l2
 
 from data_parser import DataParser
 
@@ -82,43 +83,48 @@ class BehaviorCloner:
 
 
     # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same'))
+    self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same',
+                    W_regularizer=l2(0.01)))
     self._model.add(ELU())
 
     # Conv Layer #2 (depth=36, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same'))
+    self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same',
+                    W_regularizer=l2(0.01)))
     self._model.add(ELU())
 
     # Conv Layer #3 (depth=48, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same'))
+    self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same',
+                    W_regularizer=l2(0.01)))
     self._model.add(ELU())
 
     # Conv Layer #4 (depth=64, kernel=3x3, stride=1x1)
-    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
+    self._model.add(Convolution2D(64, 3, 3, border_mode='same',
+                    W_regularizer=l2(0.01)))
     self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
 
     # Conv Layer #5 (depth=64, kernel=3x3, stride=1x1)
-    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
+    self._model.add(Convolution2D(64, 3, 3, border_mode='same',
+                    W_regularizer=l2(0.01)))
     self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
 
     self._model.add(Flatten())
 
     # Hidden Layer #1
-    self._model.add(Dense(100))
+    self._model.add(Dense(100, W_regularizer=l2(0.01)))
     self._model.add(ELU())
-    self._model.add(Dropout(0.25))
+    #self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
-    self._model.add(Dense(50))
+    self._model.add(Dense(50, W_regularizer=l2(0.01)))
     self._model.add(ELU())
-    self._model.add(Dropout(0.25))
+    #self._model.add(Dropout(0.25))
 
     # Hidden Layer #3
-    self._model.add(Dense(10))
+    self._model.add(Dense(10, W_regularizer=l2(0.01)))
     self._model.add(ELU())
-    self._model.add(Dropout(0.25))
+    #self._model.add(Dropout(0.25))
 
     # Answer
     self._model.add(Dense(1))
