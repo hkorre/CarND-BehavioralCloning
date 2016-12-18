@@ -24,8 +24,11 @@ class DataParser:
     with open(self._filename, 'r') as f:
       try:
         reader = csv.reader(f)
-        reader.next()   # skip the first line
+        firstline = True
         for row in reader:
+          if firstline:    #skip first line
+            firstline = False
+            continue
           self._file_IDs.append(row[0].split("center_",1)[1])
           steering_angles_list.append(float(row[3]))
       finally:
@@ -36,8 +39,7 @@ class DataParser:
   #  xDiv_ and yDiv_ should be 2^#
   def _grab_img_YUV(self, filename_, xDiv_, yDiv_):
     img_BGR = cv2.imread(filename_)                  #gives BGR
-    img_BGR = cv2.resize(image, 
-                         (img_BGR.shape[0]/xDiv_, img_BGR.shape[1]/yDiv_), 
+    img_BGR = cv2.resize(img_BGR, None, fx=1/xDiv_, fy=1/yDiv_, 
                          interpolation = cv2.INTER_AREA)
     return cv2.cvtColor(img_BGR, cv2.COLOR_BGR2YUV)  #gives YUV
     #TODO: resize input (maybe in data_parser.py)
@@ -53,9 +55,9 @@ class DataParser:
 
   def _combine_batch(self, start_, stop_, xDiv_, yDiv_):
     num_imgs = stop_-start_
-    self._left_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
-    self._center_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
-    self._right_imgs = np.zeros((num_imgs, self._img_height, self._img_width_original, 3))
+    self._left_imgs = np.zeros((num_imgs, int(self._img_height/yDiv_), int(self._img_width_original/xDiv_), 3))
+    self._center_imgs = np.zeros((num_imgs, int(self._img_height/yDiv_), int(self._img_width_original/xDiv_), 3))
+    self._right_imgs = np.zeros((num_imgs, int(self._img_height/yDiv_), int(self._img_width_original/xDiv_), 3))
     index = 0
     for img_num in range(start_, stop_):
       self._left_imgs[index] = self._grab_left_img(self._file_IDs[img_num], xDiv_, yDiv_)
@@ -112,8 +114,8 @@ if __name__ == '__main__':
   try:
     data_parser = DataParser()
     data_parser.parse_data()
-    data_parser.combine_batch(0, 5, 1, 1)
-    print(data.parser.center_imgs.shape)
+    data_parser.combine_batch(0, 3, 2, 2)
+    print(data_parser.center_imgs.shape)
   except:
     print(traceback.format_exc())
 
