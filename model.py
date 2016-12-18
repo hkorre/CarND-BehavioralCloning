@@ -8,6 +8,7 @@ from keras.layers import Dense, Lambda
 from keras.layers import Flatten, Activation, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers import MaxPooling2D
+from keras.layers import ELU
 
 from data_parser import DataParser
 
@@ -20,6 +21,21 @@ class BehaviorCloner:
   def __init__(self):
     self._data_parser = DataParser()
 
+
+  def _combine_LCR(self, labels_):
+    left_imgs = self._data_parser.left_imgs
+    center_imgs = self._data_parser.center_imgs
+    right_imgs = self._data_parser.right_imgs
+    total_imgs = np.concatenate((left_imgs, center_imgs, right_imgs))
+
+    left_labels = np.copy(labels_) + 0.1
+    center_labels = np.copy(labels_) + 0.1
+    right_labels = np.copy(labels_) - 0.1
+    total_labels = np.concatenate((left_labels, center_labels, right_labels))
+
+    return total_imgs, total_labels
+
+
   def _generator_creator(self, labels_, batch_size_):
       def _f():
           start = 0
@@ -28,8 +44,7 @@ class BehaviorCloner:
   
           while True:
               self._data_parser.combine_batch(start, end)
-              X_batch = self._data_parser.center_imgs
-              y_batch = labels_[start:end]
+              X_batch, y_batch = _combine_LCR(self, labels_[start:end])
               start += batch_size_
               end += batch_size_
               if start >= num_imgs:
@@ -49,6 +64,8 @@ class BehaviorCloner:
   def setup_data(self):
     self._data_parser.parse_data()
 
+  # Build model based on
+  # Nvidia "End to End Learning for Self-Driving Cars"
   def build_model(self):
 
     input_height = self._data_parser.img_height
@@ -56,33 +73,53 @@ class BehaviorCloner:
     input_channels = self._data_parser.img_channels
 
     self._model = Sequential()
+
     # normalize -1<>+1
     self._model.add(Lambda(lambda x: x/127.5 - 1.,
               input_shape=(input_height, input_width, input_channels),
               output_shape=(input_height, input_width, input_channels)))
-    # Conv Layer #1
-    self._model.add(Convolution2D(16, 5, 5, border_mode='same'))
-    self._model.add(Activation('relu'))
+
+
+    # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
+    self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same'))
+    self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
-    # Conv Layer #2
-    self._model.add(Convolution2D(32, 5, 5, border_mode='same'))
-    self._model.add(Activation('relu'))
+
+    # Conv Layer #2 (depth=36, kernel=5x5, stride=2x2)
+    self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same'))
+    self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
-    # Conv Layer #3
-    self._model.add(Convolution2D(64, 5, 5, border_mode='same'))
-    self._model.add(Activation('relu'))
+
+    # Conv Layer #3 (depth=48, kernel=5x5, stride=2x2)
+    self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same'))
+    self._model.add(ELU())
+    self._model.add(MaxPooling2D(pool_size=(2,2)))
+
+    # Conv Layer #4 (depth=64, kernel=3x3, stride=1x1)
+    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
+    self._model.add(ELU())
+    self._model.add(MaxPooling2D(pool_size=(2,2)))
+
+    # Conv Layer #5 (depth=64, kernel=3x3, stride=1x1)
+    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
+    self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
 
     self._model.add(Flatten())
 
     # Hidden Layer #1
-    self._model.add(Dense(128))
-    self._model.add(Activation('relu'))
+    self._model.add(Dense(100))
+    self._model.add(ELU)
     self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
-    self._model.add(Dense(64))
-    self._model.add(Activation('relu'))
+    self._model.add(Dense(50))
+    self._model.add(ELU)
+    self._model.add(Dropout(0.25))
+
+    # Hidden Layer #3
+    self._model.add(Dense(10))
+    self._model.add(ELU)
     self._model.add(Dropout(0.25))
 
     # Answer
@@ -100,7 +137,7 @@ class BehaviorCloner:
     # train the model
     train_gen = self._generator_creator(self._data_parser.steering_angles,
                                         batch_size_)
-    num_imgs = self._data_parser.steering_angles.shape[0]
+    num_imgs = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
     history = self._model.fit_generator(train_gen(), num_imgs, num_epochs_)
 
     print('... train_model() done')
@@ -122,8 +159,8 @@ if __name__ == '__main__':
     behavior_cloner.setup_data()
     behavior_cloner.build_model()
 
-    test_num_epochs = 10
-    test_batch_size = 16
+    test_num_epochs = 3
+    test_batch_size = 8
     behavior_cloner.train_model(test_num_epochs, test_batch_size)
 
     behavior_cloner.save_model()

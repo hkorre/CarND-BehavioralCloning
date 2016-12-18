@@ -1,5 +1,6 @@
 import argparse
 import base64
+import csv
 import json
 
 import numpy as np
@@ -22,12 +23,6 @@ model = None
 prev_image_array = None
 
 
-def normalize_img(img_):
-    # data from 0-255 -> -0.5-0.5
-    #change type to np.float32 to accomodate negative numbers
-    #  and get ready for further math
-    return (img_.astype(np.float32)/255) - 0.5
-
 @sio.on('telemetry')
 def telemetry(sid, data):
     # The current steering angle of the car
@@ -38,9 +33,9 @@ def telemetry(sid, data):
     speed = data["speed"]
     # The current image from the center camera of the car
     imgString = data["image"]
-    image = Image.open(BytesIO(base64.b64decode(imgString)))
+    image = Image.open(BytesIO(base64.b64decode(imgString)))    #should be RGB
     image_array = np.asarray(image)
-    #image_array = normalize_img(image_array)
+    image_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2YUV)  #gives YUV
     transformed_image_array = image_array[None, :, :, :]
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
