@@ -9,7 +9,7 @@ from keras.layers import Dense, Lambda
 from keras.layers import Flatten, Activation, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.layers import MaxPooling2D
-from keras.layers import ELU
+from keras.layers import ELU, LeakyReLU
 from keras.regularizers import l2
 
 from data_parser import DataParser
@@ -88,28 +88,28 @@ class BehaviorCloner:
 
     # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
     self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same'))
-    self._model.add(ELU())
+    self._model.add(LeakyReLU())
     self._model.add(Dropout(0.5))
 
     # Conv Layer #2 (depth=36, kernel=5x5, stride=2x2)
     self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same'))
-    self._model.add(ELU())
+    self._model.add(LeakyReLU())
     self._model.add(Dropout(0.5))
 
     # Conv Layer #3 (depth=48, kernel=5x5, stride=2x2)
     self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same'))
-    self._model.add(ELU())
+    self._model.add(LeakyReLU())
     self._model.add(Dropout(0.5))
 
     # Conv Layer #4 (depth=64, kernel=3x3, stride=1x1)
     self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
-    self._model.add(ELU())
+    self._model.add(LeakyReLU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
     # Conv Layer #5 (depth=64, kernel=3x3, stride=1x1)
     self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
-    self._model.add(ELU())
+    self._model.add(LeakyReLU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
     test_num_epochs = 5
-    test_batch_size = 64
+    test_batch_size = 128
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
 
