@@ -83,6 +83,9 @@ class BehaviorCloner:
               output_shape=(input_height, input_width, input_channels)))
 
 
+    # Conv Layer #0 (depth=3, kernel=1x1, stride=1x1) - change color space
+    self._model.add(Convolution2D(3, 1, 1, border_mode='same'))
+
     # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
     self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same'))
     self._model.add(ELU())

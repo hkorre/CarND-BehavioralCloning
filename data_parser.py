@@ -43,8 +43,8 @@ class DataParser:
     img_BGR = cv2.imread(filename_)                  #gives BGR
     img_BGR = cv2.resize(img_BGR, None, fx=1/xDiv_, fy=1/yDiv_, 
                          interpolation = cv2.INTER_AREA)
-    return cv2.cvtColor(img_BGR, cv2.COLOR_BGR2YUV)  #gives YUV
-    #TODO: resize input (maybe in data_parser.py)
+    #return cv2.cvtColor(img_BGR, cv2.COLOR_BGR2YUV)  #gives YUV
+    return img_BGR
 
   def _grab_left_img(self, file_ID_, xDiv_, yDiv_):
     return self._grab_img_YUV('data/IMG/left_' + file_ID_, xDiv_, yDiv_)
