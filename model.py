@@ -83,29 +83,24 @@ class BehaviorCloner:
 
 
     # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same',
-                    W_regularizer=l2(0.01)))
+    self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same'))
     self._model.add(ELU())
 
     # Conv Layer #2 (depth=36, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same',
-                    W_regularizer=l2(0.01)))
+    self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same'))
     self._model.add(ELU())
 
     # Conv Layer #3 (depth=48, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same',
-                    W_regularizer=l2(0.01)))
+    self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same'))
     self._model.add(ELU())
 
     # Conv Layer #4 (depth=64, kernel=3x3, stride=1x1)
-    self._model.add(Convolution2D(64, 3, 3, border_mode='same',
-                    W_regularizer=l2(0.01)))
+    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
     self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
 
     # Conv Layer #5 (depth=64, kernel=3x3, stride=1x1)
-    self._model.add(Convolution2D(64, 3, 3, border_mode='same',
-                    W_regularizer=l2(0.01)))
+    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
     self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
 
