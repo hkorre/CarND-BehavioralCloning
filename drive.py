@@ -39,8 +39,8 @@ def telemetry(sid, data):
     image_array = cv2.cvtColor(image_array, cv2.COLOR_RGB2YUV)  #gives YUV
 
     # resize image
-    x_down_sample = 2
-    y_down_sample = 2
+    x_down_sample = 4
+    y_down_sample = 4
     image_array = cv2.resize(image_array, None,
                              fx=1/x_down_sample,
                              fy=1/y_down_sample,
