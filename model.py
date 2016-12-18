@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import numpy as np
 import json
 import traceback
 
@@ -36,15 +37,15 @@ class BehaviorCloner:
     return total_imgs, total_labels
 
 
-  def _generator_creator(self, labels_, batch_size_):
+  def _generator_creator(self, labels_, batch_size_, xDiv_, yDiv_):
       def _f():
           start = 0
           end = start + batch_size_
           num_imgs = labels_.shape[0]
   
           while True:
-              self._data_parser.combine_batch(start, end)
-              X_batch, y_batch = _combine_LCR(self, labels_[start:end])
+              self._data_parser.combine_batch(start, end, xDiv_, yDiv_) #setup data
+              X_batch, y_batch = self._combine_LCR(labels_[start:end])  #get data
               start += batch_size_
               end += batch_size_
               if start >= num_imgs:
@@ -66,10 +67,10 @@ class BehaviorCloner:
 
   # Build model based on
   # Nvidia "End to End Learning for Self-Driving Cars"
-  def build_model(self):
+  def build_model(self, xDiv_, yDiv_):
 
-    input_height = self._data_parser.img_height
-    input_width = self._data_parser.img_width
+    input_height = int(self._data_parser.img_height/yDiv_)
+    input_width = int(self._data_parser.img_width/xDiv_)
     input_channels = self._data_parser.img_channels
 
     self._model = Sequential()
@@ -106,17 +107,17 @@ class BehaviorCloner:
 
     # Hidden Layer #1
     self._model.add(Dense(100))
-    self._model.add(ELU)
+    self._model.add(ELU())
     self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
     self._model.add(Dense(50))
-    self._model.add(ELU)
+    self._model.add(ELU())
     self._model.add(Dropout(0.25))
 
     # Hidden Layer #3
     self._model.add(Dense(10))
-    self._model.add(ELU)
+    self._model.add(ELU())
     self._model.add(Dropout(0.25))
 
     # Answer
@@ -125,7 +126,7 @@ class BehaviorCloner:
 
 
 
-  def train_model(self, num_epochs_, batch_size_):
+  def train_model(self, num_epochs_, batch_size_, xDiv_, yDiv_):
     print('BehaviorCloner: train_model()...')
 
     # setup for training
@@ -133,7 +134,7 @@ class BehaviorCloner:
 
     # train the model
     train_gen = self._generator_creator(self._data_parser.steering_angles,
-                                        batch_size_)
+                                        batch_size_, xDiv_, yDiv_)
     num_imgs = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
     history = self._model.fit_generator(train_gen(), num_imgs, num_epochs_)
 
@@ -154,11 +155,15 @@ if __name__ == '__main__':
   try:
     behavior_cloner = BehaviorCloner()
     behavior_cloner.setup_data()
-    behavior_cloner.build_model()
+
+    x_down_sample = 4
+    y_down_sample = 4
+    behavior_cloner.build_model(x_down_sample, y_down_sample)
 
     test_num_epochs = 3
     test_batch_size = 8
-    behavior_cloner.train_model(test_num_epochs, test_batch_size)
+    behavior_cloner.train_model(test_num_epochs, test_batch_size, 
+                                x_down_sample, y_down_sample)
 
     behavior_cloner.save_model()
 
