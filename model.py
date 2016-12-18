@@ -112,17 +112,17 @@ class BehaviorCloner:
     self._model.add(Flatten())
 
     # Hidden Layer #1
-    self._model.add(Dense(100, W_regularizer=l2(0.01)))
+    self._model.add(Dense(100))
     self._model.add(ELU())
     #self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
-    self._model.add(Dense(50, W_regularizer=l2(0.01)))
+    self._model.add(Dense(50))
     self._model.add(ELU())
     #self._model.add(Dropout(0.25))
 
     # Hidden Layer #3
-    self._model.add(Dense(10, W_regularizer=l2(0.01)))
+    self._model.add(Dense(10))
     self._model.add(ELU())
     #self._model.add(Dropout(0.25))
 
