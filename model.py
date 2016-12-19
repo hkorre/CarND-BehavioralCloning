@@ -135,6 +135,7 @@ class BehaviorCloner:
   def _generator_creator(self, labels_, batch_size_, xDiv_, yDiv_):
       def _f():
           epoch = 0
+          max_epoch = 5
           start = 0
           end = start + batch_size_
           num_imgs = labels_.shape[0]
@@ -148,6 +149,8 @@ class BehaviorCloner:
                 start = 0
                 end = batch_size_
                 epoch += 1
+                if epoch >= max_epoch:
+                  epoch = 0
               if end >= num_imgs:
                 end = num_imgs
   
@@ -272,8 +275,8 @@ if __name__ == '__main__':
     y_down_sample = 2.5
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
-    test_num_epochs = 5
-    test_batch_size = 64 #256 #16
+    test_num_epochs = 10
+    test_batch_size = 16 #64 #256 #16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
 
