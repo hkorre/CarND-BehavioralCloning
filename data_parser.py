@@ -35,7 +35,12 @@ class DataParser:
       finally:
         f.close()
     self._steering_angles = np.asarray(steering_angles_list)
+    
+    '''
+    print(self._steering_angles)
     self._steering_angles = shuffle(self._steering_angles, random_state=0)
+    print(self._steering_angles)
+    '''
 
   # Returns YUV version of an image
   #  xDiv_ and yDiv_ should be 2^#
