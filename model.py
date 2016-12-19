@@ -272,7 +272,7 @@ if __name__ == '__main__':
     y_down_sample = 2.5
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
-    test_num_epochs = 5
+    test_num_epochs = 10
     test_batch_size = 16 #64 #256 #16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
