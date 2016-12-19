@@ -135,7 +135,7 @@ class BehaviorCloner:
   def _generator_creator(self, labels_, batch_size_, xDiv_, yDiv_):
       def _f():
           epoch = 0
-          max_epoch = 4 #5
+          max_epoch = 5
           start = 0
           end = start + batch_size_
           num_imgs = labels_.shape[0]
@@ -185,13 +185,13 @@ class BehaviorCloner:
     self._model.add(Convolution2D(3, 1, 1, border_mode='same'))
 
     # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(24, 3, 3, border_mode='valid'))
+    self._model.add(Convolution2D(24, 5, 5, border_mode='valid'))
     self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
     # Conv Layer #2 (depth=36, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(36, 3, 3, border_mode='valid'))
+    self._model.add(Convolution2D(36, 5, 5, border_mode='valid'))
     self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
