@@ -221,17 +221,17 @@ class BehaviorCloner:
     # Hidden Layer #1
     self._model.add(Dense(100))
     self._model.add(ELU())
-    #self._model.add(Dropout(0.25))
+    self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
     self._model.add(Dense(50))
     self._model.add(ELU())
-    #self._model.add(Dropout(0.25))
+    self._model.add(Dropout(0.25))
 
     # Hidden Layer #3
     self._model.add(Dense(10))
     self._model.add(ELU())
-    #self._model.add(Dropout(0.25))
+    self._model.add(Dropout(0.25))
 
     # Answer
     self._model.add(Dense(1))
