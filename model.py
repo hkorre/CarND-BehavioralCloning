@@ -92,12 +92,14 @@ class BehaviorCloner:
           #print("don't use")
           continue
 
+        '''
         # flip images
         flip_rand = randint(0,100)
         if flip_rand > 50:
           #print("flip")
           img = self._flip_images(img)
           label = self._flip_labels(label)
+        '''
 
         # add and go to next in for loop
         total_imgs[pic_num] = img
@@ -258,7 +260,7 @@ if __name__ == '__main__':
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
     test_num_epochs = 10
-    test_batch_size = 64 #256 #16
+    test_batch_size = 16 #64 #256 #16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
 
