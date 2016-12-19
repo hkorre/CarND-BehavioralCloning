@@ -63,7 +63,7 @@ class BehaviorCloner:
     right_imgs = self._data_parser.right_imgs
     #total_imgs = np.concatenate((left_imgs, center_imgs, right_imgs))
 
-    angle_adjust = 0.25 
+    angle_adjust = 0.1 #0.25 
     left_labels = np.copy(labels_) + angle_adjust
     center_labels = np.copy(labels_)
     right_labels = np.copy(labels_) - angle_adjust
@@ -221,17 +221,17 @@ class BehaviorCloner:
     # Hidden Layer #1
     self._model.add(Dense(100))
     self._model.add(ELU())
-    self._model.add(Dropout(0.25))
+    #self._model.add(Dropout(0.25))
 
     # Hidden Layer #2
     self._model.add(Dense(50))
     self._model.add(ELU())
-    self._model.add(Dropout(0.25))
+    #self._model.add(Dropout(0.25))
 
     # Hidden Layer #3
     self._model.add(Dense(10))
     self._model.add(ELU())
-    self._model.add(Dropout(0.25))
+    #self._model.add(Dropout(0.25))
 
     # Answer
     self._model.add(Dense(1))
@@ -275,7 +275,7 @@ if __name__ == '__main__':
     y_down_sample = 2.5
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
-    test_num_epochs = 10
+    test_num_epochs = 5
     test_batch_size = 16 #64 #256 #16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
