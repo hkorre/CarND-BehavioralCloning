@@ -25,21 +25,26 @@ class BehaviorCloner:
   def __init__(self):
     self._data_parser = DataParser()
 
-
+  '''
   def _flip_images(self, imgs_):
     for index in range(imgs_.shape[0]):
       imgs_[index] = cv2.flip(imgs_[index], 1) 
     return imgs_
-    '''
     img1 = imgs_[0]
     print(img1.shape)
     print(img1[0:2,:,0])
     imgs_[0] = cv2.flip(imgs_[0], 1) 
     print(img1[0:2,:,0])
-    '''
+  '''
 
+  def _flip_image(self, img_):
+    return cv2.flip(img_, 1)
+
+
+  '''
   def _flip_labels(self, labels_):
     return labels_*(-1)
+  '''
 
 
   def _subsample(self, imgs_, labels_):
@@ -52,7 +57,7 @@ class BehaviorCloner:
         labels_ = np.concatenate((labels_, transformed_labels))
     return imgs_, labels_
 
-  def _combine_LCR(self, labels_):
+  def _combine_LCR(self, labels_, epoch_):
     left_imgs = self._data_parser.left_imgs
     center_imgs = self._data_parser.center_imgs
     right_imgs = self._data_parser.right_imgs
@@ -65,8 +70,13 @@ class BehaviorCloner:
     #total_labels = np.concatenate((left_labels, center_labels, right_labels))
 
 
-    total_imgs = np.copy(left_imgs)
-    total_labels = np.copy(left_labels)
+    #total_imgs = np.copy(left_imgs)
+    #total_labels = np.copy(left_labels)
+    batch_size = left_imgs.shape[0]
+    row_size = left_imgs.shape[1]
+    col_size = left_imgs.shape[2]
+    total_imgs = np.zeros((batch_size, row_size, col_size, 3))
+    total_labels = np.zeros(batch_size)
     for pic_num in range(total_imgs.shape[0]):
       #print(pic_num)
       while 1:
@@ -78,28 +88,29 @@ class BehaviorCloner:
           #print("right")
           img   = right_imgs[index]
           label = right_labels[index]
+          #print('right: ', label)
         elif lrc_rand > 33:
           #print("center")
           img   = center_imgs[index]
           label = center_labels[index]
+          #print('center: ', label)
         else:
           #print("left")
           img   = left_imgs[index]
           label = left_labels[index]
+          #print('left: ', label)
 
         # probability says we shouldn't keep it
-        if abs(label)*100 < randint(0,100):
+        if (abs(label)*100 + epoch_*10) < randint(0,100):
           #print("don't use")
           continue
 
-        '''
         # flip images
         flip_rand = randint(0,100)
         if flip_rand > 50:
           #print("flip")
-          img = self._flip_images(img)
-          label = self._flip_labels(label)
-        '''
+          img = self._flip_image(img)
+          label *= -1
 
         # add and go to next in for loop
         total_imgs[pic_num] = img
@@ -123,18 +134,20 @@ class BehaviorCloner:
 
   def _generator_creator(self, labels_, batch_size_, xDiv_, yDiv_):
       def _f():
+          epoch = 0
           start = 0
           end = start + batch_size_
           num_imgs = labels_.shape[0]
   
           while True:
               self._data_parser.combine_batch(start, end, xDiv_, yDiv_) #setup data
-              X_batch, y_batch = self._combine_LCR(labels_[start:end])  #get data
+              X_batch, y_batch = self._combine_LCR(labels_[start:end], epoch)  #get data
               start += batch_size_
               end += batch_size_
               if start >= num_imgs:
                 start = 0
                 end = batch_size_
+                epoch += 1
               if end >= num_imgs:
                 end = num_imgs
   
@@ -259,7 +272,7 @@ if __name__ == '__main__':
     y_down_sample = 2.5
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
-    test_num_epochs = 10
+    test_num_epochs = 5
     test_batch_size = 16 #64 #256 #16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
