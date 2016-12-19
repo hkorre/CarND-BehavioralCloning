@@ -3,6 +3,7 @@
 import cv2
 import numpy as np
 import json
+from random import randint
 import traceback
 
 from keras.models import Sequential
@@ -55,22 +56,65 @@ class BehaviorCloner:
     left_imgs = self._data_parser.left_imgs
     center_imgs = self._data_parser.center_imgs
     right_imgs = self._data_parser.right_imgs
-    total_imgs = np.concatenate((left_imgs, center_imgs, right_imgs))
+    #total_imgs = np.concatenate((left_imgs, center_imgs, right_imgs))
 
-    angle_adjust = 0.1 
+    angle_adjust = 0.25 
     left_labels = np.copy(labels_) + angle_adjust
     center_labels = np.copy(labels_)
     right_labels = np.copy(labels_) - angle_adjust
-    total_labels = np.concatenate((left_labels, center_labels, right_labels))
-    #print(left_labels)
-    #print(total_labels)
+    #total_labels = np.concatenate((left_labels, center_labels, right_labels))
 
+
+    total_imgs = np.copy(left_imgs)
+    total_labels = np.copy(left_labels)
+    for pic_num in range(total_imgs.shape[0]):
+      #print(pic_num)
+      while 1:
+        # get index
+        index = randint(0,total_imgs.shape[0]-1)
+        # pick different images
+        lrc_rand = randint(0,100)
+        if lrc_rand > 66:
+          #print("right")
+          img   = right_imgs[index]
+          label = right_labels[index]
+        elif lrc_rand > 33:
+          #print("center")
+          img   = center_imgs[index]
+          label = center_labels[index]
+        else:
+          #print("left")
+          img   = left_imgs[index]
+          label = left_labels[index]
+
+        # probability says we shouldn't keep it
+        if abs(label)*100 < randint(0,100):
+          #print("don't use")
+          continue
+
+        # flip images
+        flip_rand = randint(0,100)
+        if flip_rand > 50:
+          #print("flip")
+          img = self._flip_images(img)
+          label = self._flip_labels(label)
+
+        # add and go to next in for loop
+        total_imgs[pic_num] = img
+        total_labels[pic_num] = label
+        break
+
+    #  TEST
+    #print('out for loop')
+
+    '''
     # Extra data
     total_imgs = np.concatenate((total_imgs, self._flip_images(total_imgs)))
     total_labels = np.concatenate((total_labels, self._flip_labels(total_labels)))
+    '''
 
 
-    total_imgs, total_labels = self._subsample(total_imgs, total_labels)
+    #total_imgs, total_labels = self._subsample(total_imgs, total_labels)
 
     return total_imgs, total_labels
 
@@ -123,31 +167,36 @@ class BehaviorCloner:
     self._model.add(Convolution2D(3, 1, 1, border_mode='same'))
 
     # Conv Layer #1 (depth=24, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(24, 5, 5, subsample=(2, 2), border_mode='same'))
-    self._model.add(LeakyReLU())
+    self._model.add(Convolution2D(24, 3, 3, border_mode='valid'))
+    self._model.add(ELU())
+    self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
     # Conv Layer #2 (depth=36, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(36, 5, 5, subsample=(2, 2), border_mode='same'))
-    self._model.add(LeakyReLU())
+    self._model.add(Convolution2D(36, 3, 3, border_mode='valid'))
+    self._model.add(ELU())
+    self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
     # Conv Layer #3 (depth=48, kernel=5x5, stride=2x2)
-    self._model.add(Convolution2D(48, 5, 5, subsample=(2, 2), border_mode='same'))
-    self._model.add(LeakyReLU())
+    self._model.add(Convolution2D(48, 3, 3, border_mode='valid'))
+    self._model.add(ELU())
+    self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
     # Conv Layer #4 (depth=64, kernel=3x3, stride=1x1)
-    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
-    self._model.add(LeakyReLU())
+    self._model.add(Convolution2D(64, 3, 3, border_mode='valid'))
+    self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
 
+    '''
     # Conv Layer #5 (depth=64, kernel=3x3, stride=1x1)
-    self._model.add(Convolution2D(64, 3, 3, border_mode='same'))
-    self._model.add(LeakyReLU())
+    self._model.add(Convolution2D(64, 3, 3, border_mode='valid'))
+    self._model.add(ELU())
     self._model.add(MaxPooling2D(pool_size=(2,2)))
     self._model.add(Dropout(0.5))
+    '''
 
     self._model.add(Flatten())
 
@@ -182,8 +231,8 @@ class BehaviorCloner:
     train_gen = self._generator_creator(self._data_parser.steering_angles,
                                         batch_size_, xDiv_, yDiv_)
     #num_imgs = self._data_parser.steering_angles.shape[0]*3*2   #3x for left, center, right, 2x for flipped images
-    #num_imgs = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
-    num_imgs = self._data_parser.steering_angles.shape[0]*3*2*2   #3x for left, center, right, 2x for flipped images
+    num_imgs = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
+    #num_imgs = self._data_parser.steering_angles.shape[0]*3*2*2   #3x for left, center, right, 2x for flipped images
     history = self._model.fit_generator(train_gen(), num_imgs, num_epochs_)
 
     print('... train_model() done')
@@ -204,12 +253,12 @@ if __name__ == '__main__':
     behavior_cloner = BehaviorCloner()
     behavior_cloner.setup_data()
 
-    x_down_sample = 4
-    y_down_sample = 4
+    x_down_sample = 5
+    y_down_sample = 2.5
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
-    test_num_epochs = 3 #10
-    test_batch_size = 16 #256 #16
+    test_num_epochs = 10
+    test_batch_size = 64 #256 #16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
 

@@ -35,6 +35,7 @@ class DataParser:
       finally:
         f.close()
     self._steering_angles = np.asarray(steering_angles_list)
+    self._file_IDs, self._steering_angles = shuffle(self._file_IDs, self._steering_angles, random_state=0)
     
     '''
     print(self._steering_angles)
