@@ -135,7 +135,7 @@ class BehaviorCloner:
   def _generator_creator(self, labels_, batch_size_, xDiv_, yDiv_):
       def _f():
           epoch = 0
-          max_epoch = 5
+          max_epoch = 4 #5
           start = 0
           end = start + batch_size_
           num_imgs = labels_.shape[0]
