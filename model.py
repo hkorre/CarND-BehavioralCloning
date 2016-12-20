@@ -28,12 +28,25 @@ class BehaviorCloner:
   def _flip_image(self, img_):
     return cv2.flip(img_, 1)
 
+  # based on https://medium.com/@vivek.yadav/driving-performance-of-augmentation-based-deep-learning-model-on-udacity-data-247d2234fc49#.g0moa757p
+  # transPct_range_ = 0.0<>1.0
+  def _translate_image(img_,steer_ang_,transPct_range_):
+      cols = img_.shape[1]
+      rows = img_.shape[0]
+      trans_range = cols*transPct_range_
+      # Translation
+      tr_x = trans_range*np.random.uniform()-trans_range/2   #(-range/2)<>(range/2)
+      steer_tr = steer_ang_ + (tr_x/cols)
+      Trans_M = np.float32([[1,0,tr_x],[0,1,1]])
+      image_tr = cv2.warpAffine(img_,Trans_M,(cols,rows))    
+      return image_tr,steer_tr
+
   def _combine_LCR(self, labels_, epoch_):
     left_imgs = self._data_parser.left_imgs
     center_imgs = self._data_parser.center_imgs
     right_imgs = self._data_parser.right_imgs
 
-    angle_adjust = 0.15 
+    angle_adjust = 0.1 
     left_labels = np.copy(labels_) + angle_adjust
     center_labels = np.copy(labels_)
     right_labels = np.copy(labels_) - angle_adjust
