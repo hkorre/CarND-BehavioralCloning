@@ -38,7 +38,7 @@ class BehaviorCloner:
       tr_x = trans_range*np.random.uniform()-trans_range/2   #(-range/2)<>(range/2)
       steer_tr = steer_ang_ + (tr_x/cols)
       Trans_M = np.float32([[1,0,tr_x],[0,1,1]])
-      image_tr = cv2.warpAffine(img_,Trans_M,(cols,rows))    
+      image_tr = cv2.warpAffine(img_,Trans_M,(cols,rows))
       return image_tr,steer_tr
 
   def _combine_LCR(self, labels_, epoch_):
@@ -46,7 +46,7 @@ class BehaviorCloner:
     center_imgs = self._data_parser.center_imgs
     right_imgs = self._data_parser.right_imgs
 
-    angle_adjust = 0.1 
+    angle_adjust = 0.1
     left_labels = np.copy(labels_) + angle_adjust
     center_labels = np.copy(labels_)
     right_labels = np.copy(labels_) - angle_adjust
