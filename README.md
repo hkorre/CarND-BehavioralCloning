@@ -24,7 +24,7 @@ Defines a generator that is called by model’s learning function to prepare chu
 We then add the image and steering angle to the training batch
 
 ### Example Images
-Example images are in XX
+Example images are in example_images/
 
 
 ## Model Derivation
