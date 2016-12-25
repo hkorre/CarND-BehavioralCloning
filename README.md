@@ -27,5 +27,22 @@ We then add the image and steering angle to the training batch
 Example images are in XX
 
 
+## Model Derivation
+I began with the “Nvidia Model” from the paper - End to End Learning for Self-Driving Cars, April 25, 2016 (the paper is included in the repo as pdf). I then began adjusting the model and adding new features.
 
+Features added include:
+* Normalization
+* Resizing of image
+* Dropout
+* Color Transform
+
+Modifications include:
+* Change number of ConvNet layers
+* Changing ConvNet kernel sizes
+* Changing boarder mode
+* Changing RELU to ELU
+* Adjusting ConvNet depths
+
+
+## Simulator
 Simulator Available at: Xx
