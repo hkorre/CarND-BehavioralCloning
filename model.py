@@ -77,7 +77,7 @@ class BehaviorCloner:
     return total_imgs, total_labels
 
 
-  def _generator_creator(self, labels_, batch_size_, xDiv_, yDiv_):
+  def _generator_training(self, labels_, batch_size_, xDiv_, yDiv_):
       def _f():
           epoch = 0
           max_epoch = 5
@@ -103,6 +103,27 @@ class BehaviorCloner:
   
       return _f
 
+  def _generator_validation(self, labels_, batch_size_, xDiv_, yDiv_):
+      def _f():
+          start = 0
+          end = start + batch_size_
+          num_imgs = labels_.shape[0]
+  
+          while True:
+              self._data_parser.combine_batch(start, end, xDiv_, yDiv_) #setup data
+              X_batch = self._data_parser.center_imgs
+              y_batch = labels_[start:end]
+              start += batch_size_
+              end += batch_size_
+              if start >= num_imgs:
+                start = 0
+                end = batch_size_
+              if end >= num_imgs:
+                end = num_imgs
+  
+              yield (X_batch, y_batch)
+  
+      return _f
 
   '''
   External API
@@ -180,10 +201,17 @@ class BehaviorCloner:
     self._model.compile(optimizer="adam", loss="mse")
 
     # train the model
-    train_gen = self._generator_creator(self._data_parser.steering_angles,
-                                        batch_size_, xDiv_, yDiv_)
-    num_imgs = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
-    history = self._model.fit_generator(train_gen(), num_imgs, num_epochs_)
+    train_gen = self._generator_training(self._data_parser.steering_angles,
+                                         batch_size_, xDiv_, yDiv_)
+    num_imgs_train = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
+    history = self._model.fit_generator(train_gen(), num_imgs_train, num_epochs_)
+
+    # validation
+    validation_gen = self._generator_validation(self._data_parser.steering_angles,
+                                                batch_size_, xDiv_, yDiv_)
+    num_imgs_validate = self._data_parser.steering_angles.shape[0]   #1x center
+    accuracy = self._model.evaluate_generator(validation_gen(), num_imgs_validate)
+    print("Accuracy = ", accuracy)
 
     print('... train_model() done')
 
