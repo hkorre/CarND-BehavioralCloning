@@ -30,7 +30,7 @@ class BehaviorCloner:
 
   # based on https://medium.com/@vivek.yadav/driving-performance-of-augmentation-based-deep-learning-model-on-udacity-data-247d2234fc49#.g0moa757p
   # transPct_range_ = 0.0<>1.0
-  def _translate_image(img_,steer_ang_,transPct_range_):
+  def _translate_image(self, img_,steer_ang_,transPct_range_):
       cols = img_.shape[1]
       rows = img_.shape[0]
       trans_range = cols*transPct_range_
@@ -46,10 +46,10 @@ class BehaviorCloner:
     center_imgs = self._data_parser.center_imgs
     right_imgs = self._data_parser.right_imgs
 
-    angle_adjust = 0.1
-    left_labels = np.copy(labels_) + angle_adjust
+    ANGLE_ADJUST = 0.1
+    left_labels = np.copy(labels_) + ANGLE_ADJUST 
     center_labels = np.copy(labels_)
-    right_labels = np.copy(labels_) - angle_adjust
+    right_labels = np.copy(labels_) - ANGLE_ADJUST
 
     batch_size = left_imgs.shape[0]
     row_size = left_imgs.shape[1]
@@ -81,6 +81,10 @@ class BehaviorCloner:
         if flip_rand > 50:
           img = self._flip_image(img)
           label *= -1
+
+        # translate iamges
+        MAX_TRANSLATION_PERCENTAGE = 0.1
+        img,label = self._translate_image(img, label, MAX_TRANSLATION_PERCENTAGE) 
 
         # add and go to next in for loop
         total_imgs[pic_num] = img
