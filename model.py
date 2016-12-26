@@ -83,7 +83,7 @@ class BehaviorCloner:
           label *= -1
 
         # translate iamges
-        MAX_TRANSLATION_PERCENTAGE = 0.1
+        MAX_TRANSLATION_PERCENTAGE = 0.33
         img,label = self._translate_image(img, label, MAX_TRANSLATION_PERCENTAGE) 
 
         # add and go to next in for loop
