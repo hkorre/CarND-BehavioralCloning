@@ -220,7 +220,7 @@ class BehaviorCloner:
     # train the model
     train_gen = self._generator_training(self._data_parser.steering_angles,
                                          batch_size_, xDiv_, yDiv_)
-    num_imgs_train = self._data_parser.steering_angles.shape[0]*3   #3x for left, center, right
+    num_imgs_train = self._data_parser.steering_angles.shape[0]*3*3   #3x for left, center, right
     history = self._model.fit_generator(train_gen(), num_imgs_train, num_epochs_)
 
     # validation
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     y_down_sample = 2.5
     behavior_cloner.build_model(x_down_sample, y_down_sample)
 
-    test_num_epochs = 5
+    test_num_epochs = 10
     test_batch_size = 16
     behavior_cloner.train_model(test_num_epochs, test_batch_size, 
                                 x_down_sample, y_down_sample)
