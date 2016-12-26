@@ -79,3 +79,8 @@ We use dropout to prevent overfitting to the specific images that the system is 
 
 ### Decision Making
 First the data is flattened. Then 3 hidden layers are used, of sizes 100, 50, and 10 neurons. Each of these has a ELU activation function. Lastly, there is 1 output neuron.
+
+## Validation
+I validate the model by:
+* Create a generator that only returns back center images and steering angles
+* Run evaluate_generator() which runs feedforward on the images and compares them the steering angle, resulting in a loss value
